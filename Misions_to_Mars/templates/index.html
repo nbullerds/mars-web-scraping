@@ -33,11 +33,20 @@
         </div>
         <div class = "col-md-4">
             <h2>Mars Facts</h2>
-            {{mars_facts.mars_info_html}}
+            {{mars_facts.mars_info_html | safe}}
         </div>
     </div>
     <div row>
         <h2>Mars Hemispheres</h2>
+    </div>
+    <div class="row">
+      {% for hemisphere_info in mars_facts.hemisphere_image_info %}
+          <div class="col-md-3">
+            <img alt="Hemisphere Image" src={{hemisphere_info.img_url}}
+              width=90%>
+            <h3>{{hemisphere_info.title}}</h3>
+          </div>
+      {% endfor %}
     </div>
   </div>
 </body>

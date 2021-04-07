@@ -67,8 +67,11 @@ def scrape():
     # set the header row as the df header
     mars_info_df.columns = new_header
 
+    # set index
+    mars_info_df = mars_info_df.set_index('Mars - Earth Comparison')
+
     # convert df to html table and store in mars_scrape
-    mars_info_html = mars_info_df.to_html
+    mars_info_html = mars_info_df.to_html()
     mars_scrape["mars_info_html"] = mars_info_html
 
     ########## Scrape hemisphere images from marshemispheres.com ##########
@@ -87,9 +90,12 @@ def scrape():
         link_list.append(url + link['href'])
 
     # list to store image information
-    hemisphere_image_urls = []
+    hemisphere_image_info = []
 
     for link in link_list:
+        
+        #create dict to store image information
+        img_dict = {}
         
         # go to the url with the high-quality image
         browser.visit(link)
@@ -98,24 +104,23 @@ def scrape():
         # Parse HTML with Beautiful Soup
         soup = BeautifulSoup(html, 'html.parser')
         
-        # Find all news story elements
-        images_info = soup.find_all('div', class_='cover')
+        # Find all image titles
+        image_title = soup.find('h2', class_='title').get_text()
+        title_strip = image_title.rstrip('Enhanced')
         
-        for image_info in images_info:
-            # create dictionary to store image information
-            img_dict = {}
-
-            # scrape title and image url
-            title = image_info.find('h2', class_='title').get_text()
-            title_strip = title.rstrip('Enhanced')
-            description = image_info.find('div', class_='description')
-            a = description.find('a')
-            image_url = url + a['href']
-            img_dict["title"] = title_strip[0:len(title_strip) - 1]
-            img_dict["img_url"] = image_url
-            hemisphere_image_urls.append(img_dict)
+        # Find image url
+        image_html = soup.find('img', class_='wide-image')
+        image_url = url + image_html['src']
+        
+        # Store title and url in dict and add to hemisphere list
+        img_dict["title"] = title_strip[0:len(title_strip) - 1]
+        img_dict["img_url"] = image_url
+        hemisphere_image_info.append(img_dict)
 
     # store image url list in mars_scrape
-    mars_scrape["hemisphere_images"] = hemisphere_image_urls
+    mars_scrape["hemisphere_image_info"] = hemisphere_image_info
+
+    # Close the browser after scraping
+    browser.quit()
 
     return mars_scrape
